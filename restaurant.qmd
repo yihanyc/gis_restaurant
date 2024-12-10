@@ -15,6 +15,7 @@ format:
     toc-depth: 3 
     df-print: kable
     math: true
+    embed-resources: true
   pdf:
     # https://quarto.org/docs/reference/formats/pdf.html
     link-citations: true
