@@ -23,6 +23,9 @@ prefer-html: true
 editor: 
   markdown: 
     wrap: 72
+execute:
+  warning: false
+  message: false
 ---
 
 ## 1. Introduction
@@ -194,22 +197,25 @@ spatial compatibility for our analysis.
 #| code-fold: true
 #| message: false
 #| warning: false
+#| echo: false
 options(warn = -1)
-library(sp)
-library(sf)
-library(spdep)
-library(lmtest)
-library(sandwich)
-library(ggplot2)
-library(spatialreg)
-library(tmap)
-library(tigris)
-library(dplyr)
-library(tidyverse)
-library(leaflet)
-library(units)
-library(readxl)
-library(mapview)
+suppressMessages({
+  library(sp)
+  library(sf)
+  library(spdep)
+  library(lmtest)
+  library(sandwich)
+  library(ggplot2)
+  library(spatialreg)
+  library(tmap)
+  library(tigris)
+  library(dplyr)
+  library(tidyverse)
+  library(leaflet)
+  library(units)
+  library(readxl)
+  library(mapview)
+})
 ```
 
 ```{r}
@@ -217,6 +223,7 @@ library(mapview)
 #| code-fold: true
 #| message: false
 #| warning: false
+#| echo: false
 data <- read.csv("restaurant.csv")
 data <- na.omit(data)
 
@@ -236,7 +243,7 @@ Chinese restaurants have ratings concentrated between 3.5 and 4.5, with
 a peak around 4.0. Ratings below 3.0 and above 4.5 are rare, following a
 normal distribution.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| label: plot restaurant
 #| code-fold: true
 #| message: false
@@ -271,7 +278,7 @@ with no clear trend of higher ratings clustering in specific regions.
 Review counts vary significantly, with some restaurants attracting more
 reviews than others.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| label: Maryland Chinese Restaurants and Locations
 #| code-fold: true
 #| message: false
@@ -312,7 +319,7 @@ ggplot() +
 This graph displays the distribution of Asian density in Maryland. The
 distribution is notably right-skewed, in the range from 0 to 0.5.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| label: Asian Density Distribution in Maryland
 #| code-fold: true
 #| message: false
@@ -342,7 +349,7 @@ used the scale from 0 to 0.5. The map shows that areas with higher Asian
 density tend to be located in commuting zones, suggesting a trend where
 the populations are concentrated in metropolitan areas.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| label: Merged Asian Density by Block Group
 #| code-fold: true
 #| message: false
@@ -442,7 +449,7 @@ maryland_block_groups <- st_transform(maryland_block_groups, crs = st_crs(select
 maryland_block_groups_cropped <- st_intersection(maryland_block_groups, st_union(selected_counties))
 ```
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| code-fold: true
 #| message: false
 #| warning: false
@@ -464,7 +471,7 @@ ggplot() +
 
 We also present it with the mapview package.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| code-fold: true
 #| message: false
 #| warning: false
@@ -484,7 +491,7 @@ This displays Asian density by block group based on a narrowed-down
 dataset. It clearly shows that higher Asian density is concentrated in
 the Washington, D.C., and Baltimore commuting areas.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| code-fold: true
 #| message: false
 #| warning: false
@@ -570,7 +577,7 @@ Higher Asian population density positively influences restaurant ratings
 (p = 0.0164). But median household income and the number of public
 transport commuters in the OLS model are insignificant.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| code-fold: true
 #| message: false
 #| warning: false
@@ -643,7 +650,7 @@ significant positive spatial autocorrelation, suggesting clustering of
 high and low ratings. However, for regression residuals, Moran's 𝐼 =
 0.0338 (p = 0.0809) shows weaker spatial autocorrelation.
 
-```{r}
+```{r fig.height=5, fig.width=7}
 #| code-fold: true
 #| message: false
 #| warning: false
