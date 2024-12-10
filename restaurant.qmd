@@ -699,15 +699,15 @@ print(moran_scatterplot)
 ```
 
 The scatterplot again indicates a positive spatial autocorrelation of our restaurant ratings.
+
 ------------------------------------------------------------------------
 
 ### 4.3 Spacial Regression (SAR)
-
 The spacial autocorrelation is significant and the residual
 autorrelation is not significant - our OLS model has already captured the most.
 
 But we still try to include an additional spatial
-regression (SAR) to test if there's any spacial patterns unexplored. The purpose of SAR is to model and account for spatial dependencies or spatial relationships in the data that OLS cannot address. It helps to answer if restaurant ratings in one area are influenced by ratings in neighboring areas.
+regression, **spatial autoregressive model (SAR)**, to test if there's any spacial patterns unexplored. The purpose of SAR is to model and account for spatial dependencies or spatial relationships in the data that OLS cannot address. It helps to answer if restaurant ratings in one area are influenced by ratings in neighboring areas.
 
 ```{r}
 #| code-fold: true
