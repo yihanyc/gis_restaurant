@@ -171,7 +171,7 @@ $$
 \text{Asian Density} = \frac{\text{Asian Population}}{\text{Total Population}}
 $$
 
--   **Geographic Focus: Commuting Area**:
+-   **Geographic Focus (Commuting Area)**:
 
     -   A map of Chinese restaurant locations revealed a concentration
         in the **Washington, D.C.**, and **Baltimore metropolitan
@@ -268,16 +268,15 @@ ggplot(data, aes(x = rating)) +
   )
 ```
 
-The map overlays restaurant data on Maryland block group boundaries,
-with restaurants color-coded by their ratings.
+The following map overlays restaurant data on Maryland block group
+boundaries, with restaurants color-coded by their ratings.
 
 It shows a clustering of restaurants in urbanized and suburban areas,
 particularly around Baltimore and the D.C. metropolitan area. This
 finding leads us to narrow down our restaurant dataset to a commuting
-area in the later section. Ratings are distributed across locations,
-with no clear trend of higher ratings clustering in specific regions.
-Review counts vary significantly, with some restaurants attracting more
-reviews than others.
+area in the later section 3.1.2. Ratings are distributed across
+locations. It's hard to find a clear trend of higher ratings clustering
+in specific regions.
 
 ```{r fig.height=5, fig.width=7}
 #| label: Maryland Chinese Restaurants and Locations
@@ -318,7 +317,8 @@ ggplot() +
 #### 3.1.2 Asian Density
 
 This graph displays the distribution of Asian density in Maryland. The
-distribution is notably right-skewed, in the range from 0 to 0.5.
+distribution is right-skewed, in the range from 0 to 0.5 mostly, with
+only a few outliers larger than 0.5.
 
 ```{r fig.height=5, fig.width=7}
 #| label: Asian Density Distribution in Maryland
@@ -344,11 +344,11 @@ ggplot(data, aes(x = AsianDensity)) +
   )
 ```
 
-This presents a geographic visualization of average Asian density by
-block group. Following the pattern revealed in the previous graph, we
-used the scale from 0 to 0.5. The map shows that areas with higher Asian
-density tend to be located in commuting zones, suggesting a trend where
-the populations are concentrated in metropolitan areas.
+We use a heatmap to present a geographic visualization of average Asian
+density by block group. Following the pattern revealed in the previous
+graph, we used the scale from 0 to 0.5. The map also shows that areas
+with higher Asian density tend to be located in commuting zones, like
+the rating distrubution.
 
 ```{r fig.height=5, fig.width=7}
 #| label: Merged Asian Density by Block Group
@@ -405,14 +405,9 @@ ggplot(data = md_block_groups_merged) +
 
 ### 3.2 Commuting Area
 
-#### 3.2.1 Restaurant Locations in Commuting Area
-
-This graph shows the restaurant locations within metropolitan areas,
-with each blue dot representing a restaurant. The high concentration of
-restaurants in the commuting area results from narrowing down the
-original dataset by using the OMB standard to filter the restaurants in
-metropolitan areas. This high concentration is advantageous for
-regression analysis in the later part of the study.
+Both the restaurant ratings and Asian density show a concentration in
+the commuting area. Therefore, we narrow down our vision to this
+specific region for this section.
 
 ```{r}
 #| code-fold: true
@@ -450,6 +445,13 @@ maryland_block_groups <- st_transform(maryland_block_groups, crs = st_crs(select
 maryland_block_groups_cropped <- st_intersection(maryland_block_groups, st_union(selected_counties))
 ```
 
+#### 3.2.1 Restaurant Locations in Commuting Area
+
+This graph shows the restaurant locations within metropolitan areas,
+with each blue dot representing a restaurant. The high concentration of
+restaurants in the commuting area results from the narrowing down
+process.
+
 ```{r fig.height=5, fig.width=7}
 #| code-fold: true
 #| message: false
@@ -470,7 +472,8 @@ ggplot() +
   )
 ```
 
-We also present it with the mapview package.
+We also present it with the mapview package for a more interactive
+purpose. You may find the rating for each restaurants.
 
 ```{r fig.height=5, fig.width=7}
 #| code-fold: true
@@ -488,9 +491,9 @@ mapview(selected_counties, color = "gray", alpha = 0.3) +
 
 #### 3.2.2 Asian Density in Commuting Area
 
-This displays Asian density by block group based on a narrowed-down
-dataset. It clearly shows that higher Asian density is concentrated in
-the Washington, D.C., and Baltimore commuting areas.
+The Asian density by block group based on the narrowed-down dataset
+clearly shows that higher Asian density is concentrated in the middle
+part.
 
 ```{r fig.height=5, fig.width=7}
 #| code-fold: true
@@ -538,9 +541,9 @@ print(asian_density_map)
 ## 4. Spacial Analysis
 
 Before investigating the relevance of spatial effects in our hypothesis,
-let's try a non-spatial regression model: it may simply be that the
-spatial autocorrelation in rating of restaurants is entirely explained
-by the Asian density in Maryland.
+let's try a non-spatial regression model first: it may simply be that
+the spatial autocorrelation in rating of restaurants is entirely
+explained by the Asian density in Maryland.
 
 ### 4.1 Regression Analysis (OLS)
 
@@ -574,9 +577,14 @@ ols_model <- lm(rating ~ AsianDensity + MedianHouseholdIncome + PublicTransporta
 summary(ols_model)
 ```
 
-Higher Asian population density positively influences restaurant ratings
-(p = 0.0164). But median household income and the number of public
-transport commuters in the OLS model are insignificant.
+We can see from the simple OLS regression that higher Asian population
+density is positively associated with restaurant ratings (p = 0.0164).
+For every 1-unit increase in the percentage of Asian residents in an
+area, the restaurant rating is associated with about 0.397 points
+increase on average.
+
+But median household income and the number of public transport commuters
+in the model are insignificant.
 
 ```{r fig.height=5, fig.width=7}
 #| code-fold: true
@@ -603,18 +611,17 @@ ggplot(data = data.frame(fitted_values, residuals), aes(x = fitted_values, y = r
 ```
 
 We create a scatter plot of residuals vs. fitted values to assess the
-OLS model's fit and residual distribution. The residuals, derived from
-the model, are evenly distributed around a zero line with no clear
+OLS model's fit and residual distribution. The residuals are evenly distributed around a zero line with no clear
 patterns, indicating a good fit. But we are still curious if residuals
 from OLS estimation exhibit a relationship, due to spatial
-autocorrelation with tools.
+autocorrelation with effective tools.
 
 ------------------------------------------------------------------------
 
-### 4.2 Spacial Residual (Moran's I)
+### 4.2 Spacial Residual (Moran's 𝐼)
 
 Moran's 𝐼 is used to test if our error terms are independent of the
-spatial distribution.
+spatial distribution. In other words, we are checking whether the residuals we just plotted are randomly distributed across space or show some spatial pattern.
 
 To define neighbors for Moran's 𝐼, a spatial weights matrix is used to
 represent relationships between restaurants. Neighbors are defined using
@@ -646,10 +653,13 @@ moran_residuals <- moran.test(residuals_ols, listw_k)
 print(moran_residuals)
 ```
 
-For restaurant ratings, Moran's 𝐼 = 0.0605 (p = 0.0071) indicates
-significant positive spatial autocorrelation, suggesting clustering of
-high and low ratings. However, for regression residuals, Moran's 𝐼 =
-0.0338 (p = 0.0809) shows weaker spatial autocorrelation.
+For restaurant ratings, Moran's 𝐼 = 0.0605 indicates
+a positive spatial autocorrelation. Restaurants with similar ratings tend to be geographically clustered, although the effect is not very strong. And the observed clustering is unlikely due to random chance (p = 0.0071).
+
+However, for OLS regression residuals, Moran's 𝐼 =
+0.0338 shows weaker spatial autocorrelation (p = 0.0809). 
+
+Our OLS model has accounted for most of the spatial patterns in the data.
 
 ```{r fig.height=5, fig.width=7}
 #| code-fold: true
@@ -688,14 +698,16 @@ moran_scatterplot <- ggplot(moran_data, aes(x = rating_std, y = spatial_lag_std)
 print(moran_scatterplot)
 ```
 
+The scatterplot again indicates a positive spatial autocorrelation of our restaurant ratings.
 ------------------------------------------------------------------------
 
 ### 4.3 Spacial Regression (SAR)
 
 The spacial autocorrelation is significant and the residual
-autorrelation is not significant, which explains the spacial
-correlation. But we still try to include an additional spatial
-regression (SAR).
+autorrelation is not significant - our OLS model has already captured the most.
+
+But we still try to include an additional spatial
+regression (SAR) to test if there's any spacial patterns unexplored. The purpose of SAR is to model and account for spatial dependencies or spatial relationships in the data that OLS cannot address. It helps to answer if restaurant ratings in one area are influenced by ratings in neighboring areas.
 
 ```{r}
 #| code-fold: true
@@ -707,10 +719,10 @@ sem_model <- lagsarlm(rating ~ AsianDensity ,
 summary(sem_model)
 ```
 
-The spatial regression shows that Asian population density indeed
-significantly impacts restaurant ratings. In addition, the spatial lag
-coefficient (Rho) is 0.1133 (p = 0.092). It only shows a limited spacial
-independence.
+The SAR shows that Asian population density indeed
+significantly impacts restaurant ratings. 
+
+However, the weak significance of spatial lag coefficient (Rho) suggests that spatial dependence is present (0.1133) but not strong (p = 0.092).
 
 ------------------------------------------------------------------------
 
@@ -737,8 +749,8 @@ efficiently.
 
 However, our finding of no significant spatial spillover effects
 indicates that the new restaurant's presence doesn't detract from the
-ratings of the existing restaurant. This suggests sufficient demand in
-the market for both restaurants, supporting Hotelling's idea that
+ratings of the existing restaurant. We might have observed sufficient demand in
+the market for restaurants, supporting Hotelling's idea that
 businesses can coexist and compete successfully in proximity.
 
 #### 5.2.2 Departure from Salop's Model
@@ -752,7 +764,9 @@ effect from proximity further challenges Salop's prediction.
 The lack of negative spillover effects and the persistence of clustering
 may indicate a "sufficient demand" scenario. In this case, clustering is
 sustainable because the density of demand (in areas with higher Asian
-populations) can support multiple businesses. This finding could
+populations) can support multiple businesses. 
+
+Our finding could
 contrast with markets like Flushing, NY, where high demand might already
 be saturated, and adding a new business could lead to a redistribution
 of customers or a drop in ratings.
@@ -764,7 +778,9 @@ of customers or a drop in ratings.
 Our dataset only contains Maryland residents, and it can be more
 interesting to investigate whether the no spillover effect holds in
 other regions, such as the Bay Area or Flushing, where the Asian
-population density is much higher. Besides, it can be analyzed how this
+population density is much higher. 
+
+Besides, it can be analyzed how this
 pattern changes with varying levels of restaurant quality, as
 lower-rated restaurants may face stronger competition effects than
 higher-rated ones.
@@ -774,4 +790,4 @@ higher-rated ones.
 ## 6. Conclusion
 
 Our evidence finds that Asian density significantly and positively
-affects Chinese restaurant ratings.
+affects Chinese restaurant ratings. But no significant spillover effect is observed.
